@@ -40,12 +40,10 @@ const Login: React.FC = () => {
     const [errMsg, setErrMsg] = useState("");
     const [success, setSuccess] = useState(false);
 
-
     useEffect(() => {
         const result = EMAIL_REGEX.test(email);
         setValidEmail(result);
     }, [email]);
-
 
     // reset the error msg when the user changes something
     useEffect(() => {

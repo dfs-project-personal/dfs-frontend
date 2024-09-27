@@ -1,12 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import { axiosPublic } from "../services/api";
+import { toast } from "react-toastify";
+
 import {
     Card,
     CardBody,
     Typography,
     Button,
     Input,
-    IconButton
+    IconButton,
+    Spinner
 } from "@material-tailwind/react";
 import { EyeIcon, EyeSlashIcon, ExclamationCircleIcon } from "@heroicons/react/16/solid";
 import { white_bg } from "../assets/imageImports";
@@ -52,8 +56,7 @@ const Register: React.FC = () => {
     const [validConfirmPassword, setValidConfirmPassword] = useState(false);
     const [confirmPasswordFocus, setConfirmPasswordFocus] = useState(false);
 
-    const [errMsg, setErrMsg] = useState("");
-    const [success, setSuccess] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         const result = NAME_REGEX.test(firstName);
@@ -77,10 +80,41 @@ const Register: React.FC = () => {
         setValidConfirmPassword(match);
     }, [password, confirmPassword]);
 
-    // reset the error msg when the user changes something
-    useEffect(() => {
-        setErrMsg("");
-    }, [firstName, lastName, email, password, confirmPassword]);
+    // register user
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        
+        const validFirstName = NAME_REGEX.test(firstName);
+        const validLastName = lastName && NAME_REGEX.test(lastName);
+        const validEmail = EMAIL_REGEX.test(email);
+        const validPassword = PWD_REGEX.test(password);
+        const validConfirmPassword = password === confirmPassword;
+
+        if (!validFirstName || (lastName && !validLastName) || !validEmail || !validPassword || !validConfirmPassword) {
+            toast.error("Please check the form for errors");
+            return;
+        }
+
+        const payload = {
+            firstName: firstName,
+            lastName: lastName,
+            username: email,
+            password: password
+        };
+        try {
+            const response = await axiosPublic.post("/auth/register", payload);
+            if (response.status === 201) {
+                toast.success("Registration successful! Please login to continue");
+            }
+        } catch (error) {
+            console.log(error);
+            toast.error("Registration failed. Please try again");
+        } finally {
+            setIsSubmitting(false);
+        }
+
+    }
 
     return (
         <div 
@@ -216,8 +250,13 @@ const Register: React.FC = () => {
                                     Password Mismatch
                                 </Typography> : null}
                             </div>
-                            <Button className="mt-6" fullWidth>
-                                sign up
+                            <Button 
+                                className="mt-6 flex justify-center items-center" 
+                                fullWidth
+                                onClick={handleSubmit}
+                                disabled={!validFirstName || (lastName && !validLastName) || !validEmail || !validPassword || !validConfirmPassword}
+                            >
+                                {isSubmitting ? <Spinner className="h-6 w-6" /> : "Sign Up"}
                             </Button>
                             <Typography color="gray" className="mt-4 text-center font-normal">
                                 Already have an account?{" "}
