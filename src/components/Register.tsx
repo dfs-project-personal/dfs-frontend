@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { axiosPublic } from "../services/api";
 import { toast } from "react-toastify";
 
@@ -20,6 +20,8 @@ const EMAIL_REGEX = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 
 const Register: React.FC = () => {
+
+    const navigate = useNavigate();
 
     // password field show/hide
     const [showPassword, setShowPassword] = useState(false);
@@ -106,6 +108,7 @@ const Register: React.FC = () => {
             const response = await axiosPublic.post("/auth/register", payload);
             if (response.status === 201) {
                 toast.success("Registration successful! Please login to continue");
+                navigate("/login");
             }
         } catch (error) {
             console.log(error);
